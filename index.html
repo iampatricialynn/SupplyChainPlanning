@@ -85,6 +85,8 @@ body.wave-step-4 .wave{ transform: translate(24vw, -50%); }
 body.wave-step-5 .wave{ transform: translate(30vw, -52%); }
 body.wave-step-6 .wave{ transform: translate(36vw, -49%); }
 body.wave-step-7 .wave{ transform: translate(42vw, -51%); }
+body.wave-step-8 .wave{ transform: translate(42vw, -51%); }
+body.wave-step-9 .wave{ transform: translate(42vw, -51%); }
 
 @keyframes dash { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -1200; } }
 
@@ -686,8 +688,47 @@ body.section-tower .wave{ opacity:.30; filter: drop-shadow(0 0 22px var(--waveGl
     </div>
   </div>
 
+  
 <!-- Slide 9 -->
-<div class="slide" data-section="agentic">
+<div class="slide" data-section="tower">
+
+  <div class="metrics-top">
+    <div class="metricChip warn">Volatility ↑</div>
+    <div class="metricChip warn">Complexity ↑</div>
+    <div class="metricChip bad">Manual Planning Limits Reached</div>
+  </div>
+
+  <div class="eyebrow">Why Now</div>
+
+  <div class="h2">
+    THE MODEL<br>
+    HAS<br>
+    BROKEN.
+  </div>
+
+  <div class="sub">
+    Supply chains are no longer stable or predictable.<br><br>
+    
+    Volume spikes, disruptions, and variability exceed human planning capacity.<br><br>
+
+    <em>Planning must move from periodic decisions → to continuous adaptation.</em>
+  </div>
+
+  <div style="margin-top:22px;">
+    <div class="flow">
+      <span class="icon">📉</span> Volatility →
+      <span class="icon">⚠️</span> Disruptions →
+      <span class="icon">⏱</span> Delays →
+      <span class="icon">🧊</span> Shelf Impact
+    </div>
+    <div class="flowLine"></div>
+  </div>
+
+</div>
+
+
+<!-- Slide 10 -->
+<div class="slide" data-section="tower">
 
   <div class="metrics-top">
     <div class="metricChip good">Decision Autonomy ↑</div>
@@ -704,7 +745,12 @@ body.section-tower .wave{ opacity:.30; filter: drop-shadow(0 0 22px var(--waveGl
     SEE.<br>
     THEY ACT.
   </div>
+
   
+<div class="sub">
+  <em>We are moving from creating a supply chain plan → to building a system that runs it.</em>
+</
+
 <div class="sub">
   Planning becomes a <em>self-adjusting system</em> —
   continuously sensing, deciding, and acting.<br><br>
@@ -730,7 +776,7 @@ body.section-tower .wave{ opacity:.30; filter: drop-shadow(0 0 22px var(--waveGl
 
 <div class="thumb-bar" id="thumbs"></div>
 <div id="nav"></div>
-<div class="slide-num" id="slide-num">01 / 09</div>
+<div class="slide-num" id="slide-num">01 / 10</div>
 
 <script>
 const slides = [...document.querySelectorAll('.slide')];
@@ -770,8 +816,12 @@ const talkTracks = [
   "Supply sensing adds confidence levels so we know what will be late or short—before it impacts customers.",
   "We translate risk into actions—rebalancing, expediting, and rescheduling to protect service.",
   "The control tower fuses demand and supply signals to recommend the best actions and drive closed-loop execution."
-  "The future is not just visibility—it’s agency. Systems don’t just tell us what’s happening; they take action. Agentic AI continuously detects change, decides the best response, and executes—closing the loop across demand, supply, and operations."
+   // ✅ NEW: WHY NOW
+  "The environment has changed. Volatility and complexity now exceed what human planning cycles can absorb. This is why continuous, system-led decisioning is required.",
+  // ✅ NEW: AGENTIC CLOSE
+  "We are moving from creating a supply chain plan to building a system that runs it - continuously sensing, deciding, and acting to protect service and win the shelf."
 ];
+
 
 let current = 0;
 
@@ -784,7 +834,9 @@ const thumbLabels = [
   "Supply: Capability",
   "Supply: Value",
   "Control Tower",
+  "Why Now",
   "Agentic Future"
+
 ];
 
 // Build nav + thumbs
