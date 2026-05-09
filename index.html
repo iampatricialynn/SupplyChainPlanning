@@ -1,100 +1,192 @@
 
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>RCCB Demand Sensing Executive Story</title>
+<title>RCCB Demand + Supply Sensing Story</title>
+
 <style>
 body {
-    font-family: Segoe UI, Arial, sans-serif;
     margin: 0;
-    background-color: #f4f4f4;
+    font-family: Segoe UI, Arial;
+    background: #f4f4f4;
 }
+
 .slide {
+    display: none;
     padding: 40px;
     margin: 30px;
     background: white;
     border-radius: 10px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
-.title {
-    font-size: 32px;
-    font-weight: bold;
-    margin-bottom: 20px;
-}
-.subtitle {
-    font-size: 20px;
-    color: #666;
-    margin-bottom: 15px;
-}
+
+.active { display: block; }
+
+.title { font-size: 30px; font-weight: bold; margin-bottom: 15px; }
+.subtitle { color: #666; font-size: 20px; margin-bottom: 15px; }
+
 .red { color: #c00000; }
 .green { color: #00a651; }
+
 .flow {
-    font-size: 28px;
+    font-size: 26px;
     text-align: center;
     margin: 20px 0;
 }
+
 .metrics {
-    font-size: 22px;
     font-weight: bold;
     text-align: center;
-    background: #eee;
     padding: 15px;
-    border-radius: 5px;
     margin-top: 20px;
+    background: #eee;
+    border-radius: 5px;
 }
-ul {
+
+.section-divider {
+    text-align: center;
     font-size: 18px;
-    line-height: 1.6;
+    font-weight: bold;
+    padding: 12px;
+    margin: 20px auto;
+    width: 250px;
+    border-radius: 20px;
+    background: #ddd;
+}
+
+.thumbnail-bar {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: white;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+.thumb {
+    width: 140px;
+    margin: 5px;
+    padding: 10px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    font-size: 12px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.thumb.active {
+    border: 3px solid #c00000;
+    background: #fff;
 }
 </style>
+
 </head>
 <body>
 
-<!-- Slide 1 -->
-<div class="slide">
-    <div class="title red">RCCB Demand Reality: The Market Moves Faster Than Our Plans</div>
-    <div class="subtitle">We are planning using historical data in a real-time world</div>
+<div id="slides">
 
+<!-- DEMAND SECTION -->
+<div class="section-divider">Demand Sensing (1–3)</div>
+
+<div class="slide active">
+    <div class="title red">Demand Reality: Planning in the Past</div>
+    <div class="subtitle">Forecasts lag fast-moving demand</div>
     <ul>
-        <li>Demand driven by promotions, weather, and local behavior</li>
-        <li>Forecasts rely on lagging historical data</li>
-        <li>Limited visibility into real-time consumption</li>
-        <li>Frequent stockouts, overstock, and costly expedites</li>
+        <li>Demand shifts from weather & promotions</li>
+        <li>Planning based on historical trends</li>
+        <li>Stockouts & overstock imbalance</li>
     </ul>
-
-    <div class="flow red">📡 ✖ → 🏭 ✖ → 🚚 ✖ → 🧊 (Broken Flow)</div>
-
-    <div class="metrics red">We are reacting after demand happens</div>
+    <div class="flow red">📡 ✖ → 🧊 (Missed Demand)</div>
 </div>
 
-<!-- Slide 2 -->
 <div class="slide">
-    <div class="title">Demand Sensing: Turning Real-Time Signals into Action</div>
-    <div class="subtitle">From guessing demand → sensing it in real time</div>
-
+    <div class="title">Demand Sensing Capability</div>
+    <div class="subtitle">Real-time signals drive decisions</div>
     <ul>
-        <li>Real-time signals from retail, channels, and customers</li>
-        <li>Machine learning improves short-term accuracy</li>
-        <li>Early detection of demand shifts</li>
-        <li>Alignment across sales, supply, and operations</li>
+        <li>Retail + channel signals</li>
+        <li>Machine learning forecasts</li>
+        <li>Cross-functional alignment</li>
     </ul>
-
-    <div class="flow">📡 ➜ 🏭 ➜ 🚚 ➜ 🧊 (Signal-Driven Flow)</div>
-
-    <div class="metrics">We see demand forming before it hits our system</div>
+    <div class="flow">📡 → 🏭 → 🚚 → 🧊</div>
 </div>
 
-<!-- Slide 3 -->
 <div class="slide">
-    <div class="title green">Business Impact: Precision Inventory, Superior Service</div>
-    <div class="subtitle">Inventory becomes a strategic advantage</div>
-
+    <div class="title green">Demand Value</div>
     <ul>
-        <li>Dynamic inventory positioning across RCCB network</li>
-        <li>Reduced safety stock with improved accuracy</li>
-        <li>Faster response to promotions and demand spikes</li>
-        <li>Less firefighting, more proactive planning</li>
+        <li>Precise inventory placement</li>
+        <li>Faster response to spikes</li>
+        <li>Better service performance</li>
     </ul>
+    <div class="metrics green">Service ↑ | Inventory ↓ | Sales ↑</div>
+</div>
 
-    <div class="flow green">📡 → 🏭 → 🚚 → 🧊 (Seamless Flow)</div>
+<!-- SUPPLY SECTION -->
+<div class="section-divider">Supply Sensing (4–6)</div>
+
+<div class="slide">
+    <div class="title red">Supply Reality: Disruption is Invisible</div>
+    <ul>
+        <li>Late shipments</li>
+        <li>Production variability</li>
+        <li>Reactive firefighting</li>
+    </ul>
+    <div class="flow red">🏭 ✖ → 🚚 ✖ → 🧊</div>
+</div>
+
+<div class="slide">
+    <div class="title">Supply Sensing Capability</div>
+    <ul>
+        <li>Real-time supply monitoring</li>
+        <li>Risk scoring & probabilities</li>
+        <li>Early disruption detection</li>
+    </ul>
+    <div class="flow">📡 → 🏭 → 🚚</div>
+</div>
+
+<div class="slide">
+    <div class="title green">Supply Value</div>
+    <ul>
+        <li>Proactive mitigation</li>
+        <li>Service protection</li>
+        <li>Operational stability</li>
+    </ul>
+    <div class="metrics green">Risk ↓ | Service ↑ | Stability ↑</div>
+</div>
+
+</div>
+
+<!-- THUMBNAIL NAV -->
+<div class="thumbnail-bar" id="thumbs"></div>
+
+<script>
+const slides = document.querySelectorAll(".slide");
+const thumbsContainer = document.getElementById("thumbs");
+let current = 0;
+
+slides.forEach((slide, index) => {
+    const thumb = document.createElement("div");
+    thumb.className = "thumb";
+    thumb.innerText = "Slide " + (index + 1);
+    thumb.onclick = () => showSlide(index);
+    thumbsContainer.appendChild(thumb);
+});
+
+function showSlide(index){
+    slides[current].classList.remove("active");
+    thumbsContainer.children[current].classList.remove("active");
+
+    current = index;
+
+    slides[current].classList.add("active");
+    thumbsContainer.children[current].classList.add("active");
+}
+
+showSlide(0);
+</script>
+
+</body>
+</html>
