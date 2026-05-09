@@ -1179,6 +1179,16 @@ function go(n){
 
   if(narrationOn) updateNarration();
   if(presenterOn) updatePresenter();
+
+  
+// ✅ ADD THIS
+  if (current === slides.length - 1) {
+    enterCinematic()
+      console.log("ENTER CINEMATIC", {current, cinematicActive});
+  } else if (cinematicActive) {
+    exitCinematic();
+  }
+
 }
 // ───────── CINEMATIC ENDING LOGIC ─────────
 let cinematicActive = false;
@@ -1232,12 +1242,6 @@ function revealCinematic(){
       }
     }, 450);
   }
-  // ✅ Trigger cinematic ONLY on slide change (correct place)
-  if (current === slides.length - 1) {
-    enterCinematic();
-  } else if (cinematicActive) {
-    exitCinematic();
-  }
 }
 // Keyboard controls
 document.addEventListener('keydown', e => {
@@ -1254,7 +1258,15 @@ document.addEventListener('keydown', e => {
   if(e.key === '-' || e.key === '_') adjustRehearsal(1);
 
   // Cinematic controls
-  if((e.key === 'Enter') && cinematicActive) revealCinematic();
+    if(e.key === 'Enter'){
+  // If we're on the last slide, Enter should start cinematic + reveal
+  if(current === slides.length - 1){
+    e.preventDefault();
+    if(!cinematicActive) enterCinematic();
+    revealCinematic();
+  }
+}
+``
   if((e.key === 'Escape') && cinematicActive) exitCinematic();
   
 });
