@@ -529,7 +529,7 @@ body.section-tower .wave{ opacity:.30; filter: drop-shadow(0 0 22px var(--waveGl
 <div id="presenter" aria-live="polite">
   <div class="header">
     <div class="tag">PRESENTER VIEW</div>
-    <div class="keys">P toggle • N notes • R rehearse • ←/→</div>
+      <div class="keys">F full screen • P presenter • N notes • R rehearse • ←/→</div>
   </div>
   <div class="body">
     <div class="pBlock">
@@ -833,6 +833,7 @@ const thumbs = document.getElementById('thumbs');
 const slideNum = document.getElementById('slide-num');
 const connectors = document.getElementById('connectors');
 
+
 // Narration
 const narration = document.getElementById('narration');
 const narrationLine = document.getElementById('narrationLine');
@@ -1009,6 +1010,14 @@ function togglePresenter(){
   if(presenterOn) updatePresenter();
 }
 
+    function toggleFullScreen(){
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+}
+
 function updateRehearsalHUD(){
   rehearsalHUD.classList.toggle('on', rehearsalOn);
   rehStatus.textContent = rehearsalOn ? 'ON' : 'OFF';
@@ -1077,8 +1086,12 @@ document.addEventListener('keydown', e => {
   if(e.key === 'n' || e.key === 'N') toggleNarration();
   if(e.key === 'p' || e.key === 'P') togglePresenter();
   if(e.key === 'r' || e.key === 'R') toggleRehearsal();
-  if(e.key === '+' || e.key === '=') adjustRehearsal(-1); // faster
-  if(e.key === '-' || e.key === '_') adjustRehearsal(1);  // slower
+
+  // ✅ NEW: Full screen mode
+  if(e.key === 'f' || e.key === 'F') toggleFullScreen();
+
+  if(e.key === '+' || e.key === '=') adjustRehearsal(-1);
+  if(e.key === '-' || e.key === '_') adjustRehearsal(1);
 });
 
 window.addEventListener('resize', () => {
