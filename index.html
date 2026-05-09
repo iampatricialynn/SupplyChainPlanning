@@ -908,14 +908,16 @@ body.cinematic-on .metrics-top{
     </div>
     <div class="flowLine"></div>
   </div>
-  </div>
-  
-<div id="cineLine1" class="cinematicLine cine-hidden">
-  WE DON’T PREDICT THE FUTURE —
-</div>
 
-<div id="cineLine2" class="cinematicLine small cine-hidden" style="color: var(--green);">
-  WE OUTLEARN IT.
+  <!-- ✅ IMPORTANT: KEEP THESE INSIDE THE SLIDE -->
+  <div id="cineLine1" class="cinematicLine cine-hidden">
+    WE DON’T PREDICT THE FUTURE —
+  </div>
+
+  <div id="cineLine2" class="cinematicLine small cine-hidden" style="color: var(--green);">
+    WE OUTLEARN IT.
+  </div>
+
 </div>
 
 
@@ -1016,7 +1018,7 @@ function setBodySection(sec){
 }
 
 function setWaveStep(i){
-  for(let k=0;k<8;k++) document.body.classList.remove('wave-step-'+k);
+  for(let k=0;k<20;k++) document.body.classList.remove('wave-step-'+k);
   document.body.classList.add('wave-step-'+i);
 }
 
@@ -1202,10 +1204,7 @@ function enterCinematic(){
   if(l1){ l1.classList.remove('cine-show'); l1.classList.add('cine-hidden'); }
   if(l2){ l2.classList.remove('cine-show'); l2.classList.add('cine-hidden'); }
 
-  // Optional: auto-reveal after a beat (comment out if you want manual-only)
-  setTimeout(() => {
-    if(cinematicActive && !cinematicRevealed) revealCinematic();
-  }, 1400);
+// Manual reveal only (MORE EXEC-CONTROLLED)
 }
 
 function exitCinematic(){
@@ -1233,6 +1232,12 @@ function revealCinematic(){
       }
     }, 450);
   }
+  // ✅ Trigger cinematic ONLY on slide change (correct place)
+  if (current === slides.length - 1) {
+    enterCinematic();
+  } else if (cinematicActive) {
+    exitCinematic();
+  }
 }
 // Keyboard controls
 document.addEventListener('keydown', e => {
@@ -1251,13 +1256,7 @@ document.addEventListener('keydown', e => {
   // Cinematic controls
   if((e.key === 'Enter') && cinematicActive) revealCinematic();
   if((e.key === 'Escape') && cinematicActive) exitCinematic();
-
-  // Cinematic ending triggers only on final slide
-  if (isLastSlide()) {
-    enterCinematic();
-  } else if (cinematicActive) {
-    exitCinematic();
-  }
+  
 });
 
 window.addEventListener('resize', () => {
