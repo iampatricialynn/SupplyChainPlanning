@@ -498,6 +498,94 @@ body.section-tower .wave{ opacity:.30; filter: drop-shadow(0 0 22px var(--waveGl
   #presenter{ width: 90vw; left: 5vw; bottom: 9.5vh; }
   #rehearsalHUD{ right: 5vw; bottom: 9.5vh; }
 }
+
+  /* ───────── CINEMATIC ENDING ───────── */
+#cinematicOverlay{
+  position:fixed;
+  inset:0;
+  z-index: 9994; /* under nav (9999) but above content */
+  pointer-events:none;
+  opacity:0;
+  transition: opacity .5s ease;
+  background:
+    radial-gradient(circle at 50% 55%, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 55%, rgba(0,0,0,.82) 100%),
+    linear-gradient(180deg, rgba(0,0,0,.20), rgba(0,0,0,.55));
+}
+
+body.cinematic-on #cinematicOverlay{
+  opacity:1;
+}
+
+.cinematicPrompt{
+  position:absolute;
+  left:50%;
+  bottom: 14vh; /* stays above thumb bar */
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.65);
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(10,10,10,.45);
+  backdrop-filter: blur(10px);
+  border-radius: 999px;
+  padding: 10px 14px;
+  opacity:0;
+  transition: opacity .35s ease, transform .35s ease;
+}
+
+body.cinematic-on .cinematicPrompt{
+  opacity:1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Hide UI chrome during cinematic (keeps the slide clean) */
+body.cinematic-on #nav,
+body.cinematic-on .thumb-bar,
+body.cinematic-on .slide-num,
+body.cinematic-on #rehearsalHUD{
+  opacity:0 !important;
+  pointer-events:none !important;
+  transition: opacity .35s ease;
+}
+
+/* Optional: dim metrics during cinematic so headline owns the room */
+body.cinematic-on .metrics-top{
+  opacity:.35;
+  transition: opacity .35s ease;
+}
+
+/* Spotlight line for last-slide close */
+.cinematicLine{
+  margin-top: 22px;
+  font-family: var(--font-display);
+  font-size: clamp(44px, 6vw, 92px);
+  line-height: .95;
+  color: var(--white);
+  text-shadow: 0 0 22px rgba(42,232,122,.18);
+  letter-spacing: 1px;
+}
+
+.cinematicLine.small{
+  font-size: clamp(26px, 3.2vw, 44px);
+  line-height: 1.05;
+  opacity: .92;
+}
+
+/* Hidden → revealed animation */
+.cine-hidden{
+  opacity:0;
+  transform: translateY(16px);
+  filter: blur(2px);
+  transition: opacity .45s ease, transform .45s ease, filter .45s ease;
+}
+
+.cine-show{
+  opacity:1;
+  transform: translateY(0);
+  filter: blur(0);
+}
 </style>
 </head>
 
@@ -554,6 +642,10 @@ body.section-tower .wave{ opacity:.30; filter: drop-shadow(0 0 22px var(--waveGl
     <div class="val" id="rehSpeed">8s</div>
   </div>
   <div class="hint">R toggle • +/- speed • auto-advances</div>
+</div>
+<!-- CINEMATIC OVERLAY -->
+<div id="cinematicOverlay" aria-hidden="true">
+  <div class="cinematicPrompt">Enter reveal • Esc exit • F full screen</div>
 </div>
 
 <div id="deck">
@@ -816,7 +908,13 @@ body.section-tower .wave{ opacity:.30; filter: drop-shadow(0 0 22px var(--waveGl
     </div>
     <div class="flowLine"></div>
   </div>
+<div id="cineLine1" class="cinematicLine cine-hidden">
+  WE DON’T PREDICT THE FUTURE —
+</div>
 
+<div id="cineLine2" class="cinematicLine small cine-hidden" style="color: var(--green);">
+  WE OUTLEARN IT.
+</div>
 </div>
 
 
@@ -1078,7 +1176,62 @@ function go(n){
   if(narrationOn) updateNarration();
   if(presenterOn) updatePresenter();
 }
+// ───────── CINEMATIC ENDING LOGIC ─────────
+let cinematicActive = false;
+let cinematicRevealed = false;
 
+function isLastSlide(){
+  return current === slides.length - 1;
+}
+
+function enterCinematic(){
+  if(cinematicActive) return;
+  cinematicActive = true;
+  cinematicRevealed = false;
+
+  // Pause rehearsal automatically for a dramatic finish
+  if(rehearsalOn) stopRehearsal();
+
+  document.body.classList.add('cinematic-on');
+
+  // Ensure lines start hidden
+  const l1 = document.getElementById('cineLine1');
+  const l2 = document.getElementById('cineLine2');
+  if(l1){ l1.classList.remove('cine-show'); l1.classList.add('cine-hidden'); }
+  if(l2){ l2.classList.remove('cine-show'); l2.classList.add('cine-hidden'); }
+
+  // Optional: auto-reveal after a beat (comment out if you want manual-only)
+  setTimeout(() => {
+    if(cinematicActive && !cinematicRevealed) revealCinematic();
+  }, 1400);
+}
+
+function exitCinematic(){
+  cinematicActive = false;
+  cinematicRevealed = false;
+  document.body.classList.remove('cinematic-on');
+
+  const l1 = document.getElementById('cineLine1');
+  const l2 = document.getElementById('cineLine2');
+  if(l1){ l1.classList.remove('cine-show'); l1.classList.add('cine-hidden'); }
+  if(l2){ l2.classList.remove('cine-show'); l2.classList.add('cine-hidden'); }
+}
+
+function revealCinematic(){
+  cinematicRevealed = true;
+  const l1 = document.getElementById('cineLine1');
+  const l2 = document.getElementById('cineLine2');
+  if(l1){ l1.classList.remove('cine-hidden'); l1.classList.add('cine-show'); }
+  if(l2){
+    // Reveal 2nd line slightly after the first for impact
+    setTimeout(() => {
+      if(cinematicActive){
+        l2.classList.remove('cine-hidden');
+        l2.classList.add('cine-show');
+      }
+    }, 450);
+  }
+}
 // Keyboard controls
 document.addEventListener('keydown', e => {
   if(e.key === 'ArrowRight' || e.key === ' ') go(current + 1);
@@ -1092,6 +1245,10 @@ document.addEventListener('keydown', e => {
 
   if(e.key === '+' || e.key === '=') adjustRehearsal(-1);
   if(e.key === '-' || e.key === '_') adjustRehearsal(1);
+
+  // Cinematic controls
+  if((e.key === 'Enter') && cinematicActive) revealCinematic();
+  if((e.key === 'Escape') && cinematicActive) exitCinematic();
 });
 
 window.addEventListener('resize', () => {
