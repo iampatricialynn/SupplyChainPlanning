@@ -1249,6 +1249,13 @@ document.addEventListener('keydown', e => {
   // Cinematic controls
   if((e.key === 'Enter') && cinematicActive) revealCinematic();
   if((e.key === 'Escape') && cinematicActive) exitCinematic();
+
+  // Cinematic ending triggers only on final slide
+  if (isLastSlide()) {
+    enterCinematic();
+  } else if (cinematicActive) {
+    exitCinematic();
+  }
 });
 
 window.addEventListener('resize', () => {
