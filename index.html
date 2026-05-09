@@ -829,3 +829,832 @@ renderConnectors();
 
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>RCCB Planning Transformation — Executive Story</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+:root{
+  --black:#0B0B0B;
+  --white:#F7F5F2;
+  --mid:#8C8C8C;
+  --border:#2A2A2A;
+
+  --red:#C8102E;
+  --amber:#F5A623;
+  --green:#2AE87A;
+
+  --font-display:'Bebas Neue', sans-serif;
+  --font-body:'DM Sans', sans-serif;
+  --font-mono:'DM Mono', monospace;
+
+  /* Watermark image (place file beside HTML or update path) */
+  --wm-img: url("Reyes Coca-Cola Logo (final).png");
+
+  /* Keep content above thumbs/nav */
+  --safe-bottom: 18vh;
+
+  /* Wave band baseline */
+  --waveY: 62vh;
+}
+
+/* ───────── GLOBAL ───────── */
+html, body {
+  width:100%;
+  height:100%;
+  background:var(--black);
+  color:var(--white);
+  font-family:var(--font-body);
+  overflow:hidden;
+}
+
+#deck{ width:100vw; height:100vh; position:relative; }
+
+/* Section state controls wave color/energy */
+body.section-demand { --wave:#C8102E; --waveGlow:rgba(200,16,46,.35); }
+body.section-supply  { --wave:#F5A623; --waveGlow:rgba(245,166,35,.35); }
+body.section-tower  { --wave:#2AE87A; --waveGlow:rgba(42,232,122,.35); }
+
+/* ───────── SIGNAL WAVE LAYER ───────── */
+#waveLayer{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:1;
+  opacity:.9;
+}
+
+.wave{
+  position:absolute;
+  left:-20vw;
+  top:var(--waveY);
+  width:140vw;
+  height:240px;
+  filter: drop-shadow(0 0 16px var(--waveGlow));
+  opacity:.22;
+  transform: translateY(-50%);
+  transition: opacity .35s ease, filter .35s ease, transform .35s ease;
+}
+
+/* Wave “travels” slightly every slide */
+body.wave-step-0 .wave{ transform: translate(0, -50%); }
+body.wave-step-1 .wave{ transform: translate(6vw, -52%); }
+body.wave-step-2 .wave{ transform: translate(12vw, -49%); }
+body.wave-step-3 .wave{ transform: translate(18vw, -51%); }
+body.wave-step-4 .wave{ transform: translate(24vw, -50%); }
+body.wave-step-5 .wave{ transform: translate(30vw, -52%); }
+body.wave-step-6 .wave{ transform: translate(36vw, -49%); }
+body.wave-step-7 .wave{ transform: translate(42vw, -51%); }
+
+/* Animated stroke dash = “signal moving” */
+@keyframes dash {
+  0%   { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -1200; }
+}
+
+/* Slightly stronger for Control Tower */
+body.section-tower .wave{ opacity:.30; filter: drop-shadow(0 0 22px var(--waveGlow)); }
+
+/* ───────── CONNECTOR LAYER (NODES + LINES) ───────── */
+#connectors{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  z-index: 3; /* above wave, under nav */
+  opacity: .95;
+  mix-blend-mode: screen;
+}
+
+/* lines + nodes pulse in sequence */
+.conn-line{
+  stroke: var(--wave);
+  stroke-width: 2;
+  opacity: .28;
+  stroke-linecap: round;
+  animation: linePulse 1.6s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+}
+@keyframes linePulse{
+  0%,100% { opacity: .12; }
+  50%     { opacity: .45; }
+}
+
+.conn-node{
+  fill: var(--wave);
+  opacity: .9;
+  filter: drop-shadow(0 0 10px var(--waveGlow));
+  animation: nodePulse 1.6s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+}
+@keyframes nodePulse{
+  0%,100% { r: 3.5; opacity:.55; }
+  50%     { r: 6.5; opacity:1; }
+}
+
+.conn-end{
+  fill: var(--white);
+  opacity: .65;
+  filter: drop-shadow(0 0 8px rgba(255,255,255,.20));
+  animation: endTwinkle 1.6s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+}
+@keyframes endTwinkle{
+  0%,100% { r: 2.2; opacity:.25; }
+  50%     { r: 3.8; opacity:.75; }
+}
+
+/* ───────── SECTION TRANSITION OVERLAY ───────── */
+#sectionTransition{
+  position:fixed;
+  inset:0;
+  background: radial-gradient(circle at 35% 45%, rgba(255,255,255,.06), transparent 55%),
+              linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,.88), rgba(0,0,0,0));
+  opacity:0;
+  pointer-events:none;
+  z-index:9998;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#sectionTransition.active{
+  animation: wipe .9s cubic-bezier(.4,0,.2,1) forwards;
+}
+
+@keyframes wipe{
+  0%   { opacity:0; transform: translateY(10px); }
+  30%  { opacity:1; }
+  70%  { opacity:1; transform: translateY(0); }
+  100% { opacity:0; transform: translateY(-10px); }
+}
+
+#sectionTransition .label{
+  font-family:var(--font-display);
+  font-size: clamp(70px, 10vw, 160px);
+  line-height:.9;
+  letter-spacing: 1px;
+  text-align:center;
+  color: var(--white);
+}
+
+#sectionTransition .tag{
+  margin-top:18px;
+  font-family:var(--font-mono);
+  font-size:12px;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  color: var(--mid);
+  text-align:center;
+}
+
+#sectionTransition .bar{
+  width:min(520px, 70vw);
+  height:6px;
+  background: var(--wave);
+  margin: 18px auto 0;
+  border-radius: 999px;
+  box-shadow: 0 0 22px var(--waveGlow);
+}
+
+/* ───────── SLIDES ───────── */
+.slide{
+  position:absolute; inset:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+
+  padding: 8vh 8vw var(--safe-bottom);
+  opacity:0;
+  pointer-events:none;
+  transform: translateY(30px);
+  transition: opacity .6s cubic-bezier(.4,0,.2,1),
+              transform .6s cubic-bezier(.4,0,.2,1);
+  z-index:2; /* above wave */
+}
+
+.slide.active{
+  opacity:1;
+  pointer-events:all;
+  transform: translateY(0);
+}
+
+/* Watermark */
+.slide::before{
+  content:"";
+  position:absolute;
+  inset:-8vh -8vw;
+  background-image: var(--wm-img);
+  background-repeat:no-repeat;
+  background-position: 88% 55%;
+  background-size: min(55vw, 760px);
+  opacity:.055;
+  filter: grayscale(100%);
+  pointer-events:none;
+}
+
+/* Type system */
+.eyebrow{
+  font-family:var(--font-mono);
+  font-size:12px;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  color: var(--red);
+  margin-bottom: 22px;
+}
+
+.h1{
+  font-family:var(--font-display);
+  font-size: clamp(74px, 12vw, 170px);
+  line-height: .9;
+  margin-bottom: 18px;
+}
+
+.h2{
+  font-family:var(--font-display);
+  font-size: clamp(62px, 10vw, 145px);
+  line-height: .92;
+  margin-bottom: 16px;
+}
+
+.sub{
+  font-size: 26px;
+  max-width: 900px;
+  line-height: 1.45;
+  color: var(--mid);
+}
+.sub em{ color: var(--white); font-style:normal; font-weight:500; }
+
+/* Flow block with measurable icons */
+.flow{
+  margin-top: 26px;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  letter-spacing: 2px;
+  color: var(--white);
+  display:inline-block;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+}
+
+.icon{
+  display:inline-block;
+  padding: 0 2px;
+  transform: translateZ(0);
+}
+
+.flowLine{
+  height:2px;
+  margin-top: 10px;
+  background: linear-gradient(90deg, transparent, var(--wave), transparent);
+  background-size: 220% 100%;
+  animation: flowmove 2.6s linear infinite;
+  opacity:.9;
+}
+
+@keyframes flowmove{
+  0%{ background-position: 0% 50%; }
+  100%{ background-position: 220% 50%; }
+}
+
+/* Metrics */
+.metrics{
+  margin-top: 22px;
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+}
+
+.metricChip{
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--mid);
+  background: rgba(255,255,255,0.03);
+}
+
+.metricChip.good{ border-color: rgba(42,232,122,.35); color: rgba(42,232,122,.92); }
+.metricChip.bad{  border-color: rgba(200,16,46,.35); color: rgba(200,16,46,.92); }
+.metricChip.warn{ border-color: rgba(245,166,35,.35); color: rgba(245,166,35,.92); }
+
+/* Animations */
+.pulse{
+  display:inline-block;
+  animation: pulse 1.7s ease-in-out infinite;
+  transform-origin:center;
+}
+@keyframes pulse{
+  0%,100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(200,16,46,0)); }
+  50%     { transform: scale(1.08); filter: drop-shadow(0 0 12px rgba(200,16,46,.35)); }
+}
+
+.brain{
+  display:inline-block;
+  animation: glow 1.6s ease-in-out infinite;
+}
+@keyframes glow{
+  0%,100% { filter: drop-shadow(0 0 0 rgba(42,232,122,0)); }
+  50%     { filter: drop-shadow(0 0 18px rgba(42,232,122,.35)); }
+}
+
+/* ───────── NAV + THUMBNAILS ───────── */
+#nav{
+  position:fixed;
+  bottom: 3vh;
+  left: 50%;
+  transform: translateX(-50%);
+  display:flex;
+  gap: 10px;
+  z-index: 9999;
+}
+
+.nav-dot{
+  width:6px; height:6px;
+  border-radius:50%;
+  background: var(--border);
+  cursor:pointer;
+}
+.nav-dot.active{ background: var(--red); transform: scale(1.4); }
+
+.slide-num{
+  position:fixed;
+  bottom: 3vh;
+  right: 4vw;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--mid);
+  z-index: 9999;
+}
+
+.thumb-bar{
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 7.2vh;
+  display:flex;
+  gap: 10px;
+  z-index: 9999;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  background: rgba(10,10,10,.55);
+  backdrop-filter: blur(10px);
+  border-radius: 999px;
+}
+
+.thumb{
+  cursor:pointer;
+  padding: 7px 10px;
+  border-radius:999px;
+  border:1px solid transparent;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--mid);
+  background: rgba(255,255,255,0.02);
+}
+
+.thumb.active{
+  border-color: rgba(200,16,46,.65);
+  color: var(--white);
+  box-shadow: 0 0 0 3px rgba(200,16,46,.12);
+}
+
+/* Mobile */
+@media (max-width: 980px){
+  .thumb-bar{ display:none; }
+  .sub{ font-size: 22px; }
+  :root{ --safe-bottom: 16vh; }
+}
+</style>
+</head>
+
+<body class="section-demand wave-step-0">
+
+<!-- SIGNAL WAVE BACKGROUND -->
+<div id="waveLayer">
+  <svg class="wave" viewBox="0 0 1400 240" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,140 C120,90 220,210 360,140 C500,70 620,210 760,140 C900,70 1040,210 1180,140 C1280,96 1340,120 1400,140"
+          fill="none"
+          stroke="var(--wave)"
+          stroke-width="6"
+          stroke-linecap="round"
+          stroke-dasharray="18 18"
+          style="animation: dash 5.5s linear infinite;"></path>
+    <path d="M0,160 C120,110 220,230 360,160 C500,90 620,230 760,160 C900,90 1040,230 1180,160 C1280,116 1340,140 1400,160"
+          fill="none"
+          stroke="var(--wave)"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-dasharray="10 16"
+          opacity=".8"
+          style="animation: dash 7.2s linear infinite;"></path>
+  </svg>
+</div>
+
+<!-- CONNECTORS SVG -->
+<svg id="connectors" aria-hidden="true"></svg>
+
+<!-- SECTION TRANSITION OVERLAY -->
+<div id="sectionTransition">
+  <div>
+    <div class="label" id="stLabel">SECTION</div>
+    <div class="bar"></div>
+    <div class="tag" id="stTag">TRANSITION</div>
+  </div>
+</div>
+
+<div id="deck">
+
+  <!-- SLIDE 1 — TITLE -->
+  <div class="slide active" data-section="demand">
+    <div class="eyebrow">RCCB Transformation</div>
+    <div class="h1">PLAN<br><span style="color:var(--mid);">LESS.</span><br>KNOW<br>MORE.</div>
+    <div class="sub">From reactive planning → to <em>real-time intelligence</em> across demand, supply, and execution.</div>
+
+    <div style="margin-top:22px;">
+      <div class="flow">
+        <span class="icon pulse" data-icon="signal">📡</span> Signals → Planning → 
+        <span class="icon brain" data-icon="ai">🧠</span> Decisions → 
+        <span class="icon" data-icon="truck">🚚</span> Execution → 
+        <span class="icon" data-icon="shelf">🧊</span> Shelf
+      </div>
+      <div class="flowLine"></div>
+    </div>
+
+    <div class="metrics">
+      <div class="metricChip good">Service ↑</div>
+      <div class="metricChip good">Decision Speed ↑</div>
+      <div class="metricChip warn">Inventory ↓</div>
+      <div class="metricChip warn">Expedites ↓</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 — DEMAND PROBLEM -->
+  <div class="slide" data-section="demand">
+    <div class="eyebrow">Demand Sensing · Slide 1 of 3</div>
+    <div class="h2" style="color:var(--red);">WE PLAN<br>IN THE<br>PAST.</div>
+    <div class="sub">Demand shifts daily—yet forecasts lag reality.</div>
+
+    <div style="margin-top:22px;">
+      <div class="flow">
+        <span class="icon pulse" data-icon="signal">📡</span> ✖ → 
+        <span class="icon" data-icon="shelf">🧊</span>  (Missed demand shows up on the shelf)
+      </div>
+      <div class="flowLine"></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 — DEMAND CAPABILITY -->
+  <div class="slide" data-section="demand">
+    <div class="eyebrow">Demand Sensing · Slide 2 of 3</div>
+    <div class="h2">SEE<br>DEMAND<br>FORMING.</div>
+    <div class="sub">Real-time signals become near-term accuracy—early enough to act.</div>
+
+    <div style="margin-top:22px;">
+      <div class="flow">
+        <span class="icon pulse" data-icon="signal">📡</span> → 
+        <span class="icon" data-icon="plant">🏭</span> → 
+        <span class="icon" data-icon="truck">🚚</span> → 
+        <span class="icon" data-icon="shelf">🧊</span>  (Signal-driven flow)
+      </div>
+      <div class="flowLine"></div>
+    </div>
+
+    <div class="metrics">
+      <div class="metricChip good">Accuracy ↑</div>
+      <div class="metricChip good">Alignment ↑</div>
+      <div class="metricChip warn">Manual Work ↓</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 — DEMAND VALUE -->
+  <div class="slide" data-section="demand">
+    <div class="eyebrow">Demand Sensing · Slide 3 of 3</div>
+    <div class="h2" style="color:var(--green);">WIN<br>THE<br>SHELF.</div>
+    <div class="sub">Inventory becomes a precision asset—placed where demand is forming.</div>
+
+    <div class="metrics">
+      <div class="metricChip good">Service ↑</div>
+      <div class="metricChip warn">Inventory ↓</div>
+      <div class="metricChip warn">Expedites ↓</div>
+      <div class="metricChip good">Sales Capture ↑</div>
+    </div>
+
+    <div style="margin-top:22px;">
+      <div class="flow">
+        <span class="icon pulse" data-icon="signal">📡</span> → 
+        <span class="icon" data-icon="plant">🏭</span> → 
+        <span class="icon" data-icon="truck">🚚</span> → 
+        <span class="icon" data-icon="shelf">🧊</span>  (Act before demand peaks)
+      </div>
+      <div class="flowLine"></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 — SUPPLY PROBLEM -->
+  <div class="slide" data-section="supply">
+    <div class="eyebrow">Supply Sensing · Slide 1 of 3</div>
+    <div class="h2" style="color:var(--red);">WE SEE<br>RISK<br>TOO LATE.</div>
+    <div class="sub">Disruption is invisible—until it breaks service.</div>
+
+    <div style="margin-top:22px;">
+      <div class="flow">
+        <span class="icon" data-icon="plant">🏭</span> ✖ → 
+        <span class="icon" data-icon="truck">🚚</span> ✖ → 
+        <span class="icon" data-icon="box">📦</span> ✖ → 
+        <span class="icon" data-icon="shelf">🧊</span>  (Uncertain supply-to-shelf)
+      </div>
+      <div class="flowLine"></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6 — SUPPLY CAPABILITY -->
+  <div class="slide" data-section="supply">
+    <div class="eyebrow">Supply Sensing · Slide 2 of 3</div>
+    <div class="h2">KNOW<br>WHAT WILL<br>BREAK.</div>
+    <div class="sub">Supply sensing adds confidence levels: timing + quantity risk.</div>
+
+    <div style="margin-top:22px;">
+      <div class="flow">
+        <span class="icon pulse" data-icon="signal">📡</span> → 
+        <span class="icon" data-icon="plant">🏭</span> → 
+        <span class="icon" data-icon="truck">🚚</span> → 
+        <span class="icon" data-icon="box">📦</span>  (Risk-aware supply flow)
+      </div>
+      <div class="flowLine"></div>
+    </div>
+
+    <div class="metrics">
+      <div class="metricChip good">Confidence ↑</div>
+      <div class="metricChip warn">Surprises ↓</div>
+      <div class="metricChip good">Decision Speed ↑</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7 — SUPPLY VALUE -->
+  <div class="slide" data-section="supply">
+    <div class="eyebrow">Supply Sensing · Slide 3 of 3</div>
+    <div class="h2" style="color:var(--green);">PROTECT<br>SERVICE.</div>
+    <div class="sub">Translate risk into action—before customers feel it.</div>
+
+    <div class="metrics">
+      <div class="metricChip good">Service Protection ↑</div>
+      <div class="metricChip warn">Expedites ↓</div>
+      <div class="metricChip good">Stability ↑</div>
+      <div class="metricChip good">Decision Speed ↑</div>
+    </div>
+
+    <div style="margin-top:22px;">
+      <div class="flow">
+        <span class="icon pulse" data-icon="signal">📡</span> → 
+        <span class="icon" data-icon="plant">🏭</span> → 
+        <span class="icon" data-icon="truck">🚚</span> → 
+        <span class="icon" data-icon="box">📦</span> → 
+        <span class="icon" data-icon="shelf">🧊</span>  (Act before disruption hits)
+      </div>
+      <div class="flowLine"></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8 — CONTROL TOWER -->
+  <div class="slide" data-section="tower">
+    <div class="eyebrow">Control Tower · Integrated Intelligence</div>
+    <div class="h2" style="color:var(--green);">FROM SIGNALS<br>TO<br>DECISIONS.</div>
+    <div class="sub">
+      Demand sensing tells us what’s coming.<br>
+      Supply sensing tells us what’s at risk.<br><br>
+      <em><span class="icon brain" data-icon="ai">🧠</span> The Control Tower decides what to do next.</em>
+    </div>
+
+    <div style="margin-top:22px;">
+      <div class="flow">
+        <span class="icon pulse" data-icon="signal">📡</span> Demand ⇄ 
+        <span class="icon" data-icon="plant">🏭</span> Supply → 
+        <span class="icon brain" data-icon="ai2">🧠</span> AI → 
+        <span class="icon" data-icon="truck">🚚</span> Execution → 
+        <span class="icon" data-icon="shelf">🧊</span> Shelf
+      </div>
+      <div class="flowLine"></div>
+    </div>
+
+    <div class="metrics">
+      <div class="metricChip good">Visibility ↑</div>
+      <div class="metricChip good">Speed ↑</div>
+      <div class="metricChip good">Service ↑</div>
+      <div class="metricChip warn">Cost ↓</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- THUMB STRIP -->
+<div class="thumb-bar" id="thumbs"></div>
+
+<!-- NAV DOTS -->
+<div id="nav"></div>
+<div class="slide-num" id="slide-num">01 / 08</div>
+
+<script>
+const slides = [...document.querySelectorAll('.slide')];
+const nav = document.getElementById('nav');
+const thumbs = document.getElementById('thumbs');
+const slideNum = document.getElementById('slide-num');
+
+const sectionTransition = document.getElementById('sectionTransition');
+const stLabel = document.getElementById('stLabel');
+const stTag = document.getElementById('stTag');
+
+const connectors = document.getElementById('connectors');
+
+let current = 0;
+
+const thumbLabels = [
+  "Title",
+  "Demand: Problem",
+  "Demand: Capability",
+  "Demand: Value",
+  "Supply: Problem",
+  "Supply: Capability",
+  "Supply: Value",
+  "Control Tower"
+];
+
+// Build nav + thumbnails
+slides.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'nav-dot' + (i === 0 ? ' active' : '');
+  d.onclick = () => go(i);
+  nav.appendChild(d);
+
+  const t = document.createElement('div');
+  t.className = 'thumb' + (i === 0 ? ' active' : '');
+  t.textContent = thumbLabels[i] || ('Slide ' + (i+1));
+  t.onclick = () => go(i);
+  thumbs.appendChild(t);
+});
+
+// Section mapping
+function sectionName(sec){
+  if(sec === 'demand') return {label:'DEMAND SENSING', tag:'FROM GUESSING → SENSING', cls:'section-demand'};
+  if(sec === 'supply')  return {label:'SUPPLY SENSING',  tag:'FROM ASSUMPTIONS → CONFIDENCE', cls:'section-supply'};
+  return {label:'CONTROL TOWER', tag:'FROM SIGNALS → DECISIONS', cls:'section-tower'};
+}
+
+function showSectionTransition(nextSection){
+  const info = sectionName(nextSection);
+  stLabel.textContent = info.label;
+  stTag.textContent = info.tag;
+  sectionTransition.classList.remove('active');
+  void sectionTransition.offsetWidth;
+  sectionTransition.classList.add('active');
+}
+
+function setBodySection(sec){
+  document.body.classList.remove('section-demand','section-supply','section-tower');
+  document.body.classList.add(sectionName(sec).cls);
+}
+
+function setWaveStep(i){
+  for(let k=0;k<8;k++) document.body.classList.remove('wave-step-'+k);
+  document.body.classList.add('wave-step-'+i);
+}
+
+/* ───────── CONNECTOR RENDERING ─────────
+   Draw animated nodes + lines from wave band to visible slide icons.
+*/
+function clearConnectors(){
+  while (connectors.firstChild) connectors.removeChild(connectors.firstChild);
+}
+
+function renderConnectors(){
+  clearConnectors();
+
+  const active = document.querySelector('.slide.active');
+  if(!active) return;
+
+  const iconEls = [...active.querySelectorAll('.icon')];
+  if(iconEls.length === 0) return;
+
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+
+  // Use same baseline as wave layer (62vh)
+  const waveY = h * 0.62;
+
+  // SVG sizing in CSS pixels
+  connectors.setAttribute('viewBox', `0 0 ${w} ${h}`);
+
+  // Sort icons by x position (so animation moves left→right)
+  const icons = iconEls.map(el => {
+    const r = el.getBoundingClientRect();
+    return { el, x: r.left + r.width/2, y: r.top + r.height/2 };
+  }).sort((a,b) => a.x - b.x);
+
+  // Draw connector per icon
+  icons.forEach((p, i) => {
+    const delay = (i * 0.18).toFixed(2) + 's';
+
+    const x1 = p.x;
+    const y1 = waveY;
+    const x2 = p.x;
+    const y2 = p.y;
+
+    // line
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
+    line.setAttribute('class', 'conn-line');
+    line.style.setProperty('--d', delay);
+    connectors.appendChild(line);
+
+    // node at wave
+    const node = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    node.setAttribute('cx', x1);
+    node.setAttribute('cy', y1);
+    node.setAttribute('r', 4);
+    node.setAttribute('class', 'conn-node');
+    node.style.setProperty('--d', delay);
+    connectors.appendChild(node);
+
+    // end sparkle near icon
+    const end = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    end.setAttribute('cx', x2);
+    end.setAttribute('cy', y2);
+    end.setAttribute('r', 2.5);
+    end.setAttribute('class', 'conn-end');
+    end.style.setProperty('--d', delay);
+    connectors.appendChild(end);
+  });
+}
+
+function go(n){
+  if(n < 0 || n >= slides.length) return;
+
+  const prevSection = slides[current].dataset.section;
+  const nextSection = slides[n].dataset.section;
+
+  // Trigger overlay animation when crossing Demand→Supply or Supply→Control
+  const crossing =
+    (prevSection === 'demand' && nextSection === 'supply') ||
+    (prevSection === 'supply' && nextSection === 'tower') ||
+    (prevSection === 'demand' && nextSection === 'tower');
+
+  if(crossing) showSectionTransition(nextSection);
+
+  slides[current].classList.remove('active');
+  slides[n].classList.add('active');
+
+  [...document.querySelectorAll('.nav-dot')].forEach((d,i)=>d.classList.toggle('active', i===n));
+  [...document.querySelectorAll('.thumb')].forEach((t,i)=>t.classList.toggle('active', i===n));
+
+  current = n;
+
+  slideNum.textContent =
+    String(current+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+
+  setBodySection(nextSection);
+  setWaveStep(current);
+
+  // Re-render connectors after transition starts
+  requestAnimationFrame(() => {
+    renderConnectors();
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight' || e.key === ' ') go(current + 1);
+  if(e.key === 'ArrowLeft') go(current - 1);
+});
+
+// Keep connectors accurate on resize
+window.addEventListener('resize', () => {
+  renderConnectors();
+});
+
+// Initialize
+setBodySection(slides[0].dataset.section);
+setWaveStep(0);
+renderConnectors();
+</script>
+
+</body>
+</html>
